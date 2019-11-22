@@ -6,6 +6,7 @@ def argparser():
         parser = argparse.ArgumentParser()
         parser.add_argument("--bin_size", required = True, help = "Size of insert size bins")
         parser.add_argument("--max_insert", required = True, help = "Max insert bin to use (every insert size larger than this goes in this bin)")
+        parser.add_argument("--library", required = True, help = "Library name (will be the first column in the output)")
         args = parser.parse_args()
         return args
 
@@ -15,6 +16,9 @@ def find_duplicates():
     insert_dict = {}
 
     for line in sys.stdin:
+
+        if line.startswith("@"):
+            continue
         line = line.strip().split("\t")
         insert_size = abs(int(line[8]))
 
@@ -56,4 +60,4 @@ if __name__ == "__main__":
     bin_dict = make_bins(insert_dict, args.bin_size, args.max_insert)
 
     for bin in sorted(bin_dict.keys(), key=int):
-        print("{}\t{}\t{}\t{}\t{}".format(sys.argv[1], bin, bin_dict[bin][1], bin_dict[bin][0], bin_dict[bin][1] / bin_dict[bin][0]))
+        print("{}\t{}\t{}\t{}\t{}".format(args.library, bin, bin_dict[bin][1], bin_dict[bin][0], bin_dict[bin][1] / bin_dict[bin][0]))
