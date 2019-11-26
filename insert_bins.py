@@ -23,10 +23,18 @@ def find_duplicates():
         insert_size = abs(int(line[8]))
 
         if insert_size not in insert_dict:
-            insert_dict[insert_size] = [0, 0] # [all_reads, duplicates]
+            insert_dict[insert_size] = [0, 0, 0] # [all_reads, optical duplicates, pcr duplicates]
         insert_dict[insert_size][0] += 1
 
-        if len(prev_read) != 20 and (int(line[1]) & 0x400 or int(prev_read[1]) & 0x400) and line[8] == prev_read[8] and line[3] == prev_read[3] and ("DT:Z:SQ" in prev_read[-1] or "DT:Z:SQ" in line[-1]):
+        if len(prev_read) != 20 and (int(line[1]) & 0x400 or int(prev_read[1]) & 0x400) and line[8] == prev_read[8] and line[3] == prev_read[3]:
+            if ("DT:Z:SQ" in prev_read[-1] or "DT:Z:SQ" in line[-1]):
+                dup_type = 1 # The index for optical duplicates
+            elif ("DT:Z:LB" in prev_read[-1] or "DT:Z:LB" in line[-1]):
+                dup_type = 2 # The index for pcr duplicates
+            else:
+                raise "These reads are marked as duplicates, but don't have a 'DT:Z:<>' flag set. Make sure you ran" \
+                      "Picard's markduplicates with '--TAGGING_POLICY All' set."
+
             first_insert = abs(int(prev_read[8]))
             second_insert = abs(int(line[8]))
 
@@ -59,5 +67,8 @@ if __name__ == "__main__":
     insert_dict = find_duplicates()
     bin_dict = make_bins(insert_dict, args.bin_size, args.max_insert)
 
+    print("Library\tBin\tTotal reads\tOptical duplicates\tPCR duplicates\Optical duplicate rate\tPCR duplicate rate\tTotal duplicate rate")
     for bin in sorted(bin_dict.keys(), key=int):
-        print("{}\t{}\t{}\t{}\t{}".format(args.library, bin, bin_dict[bin][1], bin_dict[bin][0], bin_dict[bin][1] / bin_dict[bin][0]))
+        print("{}\t{}\t{}\t{}\t{}".format(args.library, bin, bin_dict[bin][0], bin_dict[bin][1], bin_dict[bin][2], \
+                                            bin_dict[bin][1] / bin_dict[bin][0], bin_dict[bin][2] / bin_dict[bin][0],\
+                                            (bin_dict[bin][1] + bin_dict[bin][2]) / bin_dict[bin][0]))
