@@ -13,13 +13,16 @@ def argparser():
 
 def find_duplicates():
 
-    prev_read = [""] * 20
     insert_dict = {}
 
+    read_num = 0
     for line in sys.stdin:
 
         if line.startswith("@"):
             continue
+        read_num += 1
+        if read_num % 1000000 == 0:
+            print("Processed {} reads\r".format(read_num), file=sys.stderr, end = "")
         line = line.strip().split("\t")
         insert_size = abs(int(line[8]))
 
@@ -27,26 +30,17 @@ def find_duplicates():
             insert_dict[insert_size] = [0, 0, 0] # [all_reads, optical duplicates, pcr duplicates]
         insert_dict[insert_size][0] += 1
 
-        if len(prev_read) != 20 and (int(line[1]) & 0x400 or int(prev_read[1]) & 0x400) and line[8] == prev_read[8] and line[3] == prev_read[3]:
-            if ("DT:Z:SQ" in prev_read or "DT:Z:SQ" in line):
+        if int(line[1]) & 0x400:
+            if "DT:Z:SQ" in line:
                 dup_type = 1 # The index for optical duplicates
-            elif ("DT:Z:LB" in prev_read or "DT:Z:LB" in line):
+            elif "DT:Z:LB" in line:
                 dup_type = 2 # The index for pcr duplicates
             else:
-                print(prev_read)
                 print(line)
-                raise Exception("These reads are marked as duplicates, but don't have a 'DT:Z:<>' flag set. Make sure you ran Picard's markduplicates with '--TAGGING_POLICY All' set.")
+                raise Exception("This read is marked as a duplicate, but doesn't have a 'DT:Z:<>' flag set. Make sure you ran Picard's markduplicates with '--TAGGING_POLICY All' set.")
 
-            first_insert = abs(int(prev_read[8]))
-            second_insert = abs(int(line[8]))
-
-            if first_insert != second_insert:
-                print(prev_read)
-                print(line)
-                raise Exception("These duplicates don't have the same insert sizes, are you sure the bam is sorted?")
             insert_dict[insert_size][dup_type] += 1
 
-        prev_read = line
     return insert_dict
 
 def make_bins(insert_dict, bin_size, max_insert):
@@ -67,6 +61,9 @@ def make_bins(insert_dict, bin_size, max_insert):
 
 if __name__ == "__main__":
     args = argparser()
+    if int(args.bin_size) > int(args.max_insert):
+        raise Exception("Max insert size needs to be >= bin size")
+
     insert_dict = find_duplicates()
     bin_dict = make_bins(insert_dict, int(args.bin_size), int(args.max_insert))
 
