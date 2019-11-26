@@ -60,8 +60,7 @@ def make_bins(insert_dict, bin_size, max_insert):
     
     return bin_dict
 
-
-if __name__ == "__main__":
+def run_script():
     args = argparser()
     if int(args.bin_size) > int(args.max_insert):
         raise Exception("Max insert size needs to be >= bin size")
@@ -79,4 +78,7 @@ if __name__ == "__main__":
             bin_dict[bin].append((bin_dict[bin][1] + bin_dict[bin][2]) / bin_dict[bin][0])
 
         print("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(args.library, bin, bin_dict[bin][0], bin_dict[bin][1], bin_dict[bin][2], \
-                                                      bin_dict[bin][3], bin_dict[bin][4], bin_dict[bin][5]))
+                                                      bin_dict[bin][3], bin_dict[bin][4], bin_dict[bin][5]))    
+
+if __name__ == "__main__":
+    run_script()
