@@ -12,6 +12,7 @@ def argparser():
         return args
 
 def find_duplicates():
+    """ Finds all reads with the 0x400 flag set by Picard MarkDuplicates """
 
     insert_dict = {}
 
@@ -19,7 +20,7 @@ def find_duplicates():
     for line in sys.stdin:
 
         if line.startswith("@"):
-            continue
+            continue # Skip header lines, if present
         read_num += 1
         if read_num % 1000000 == 0:
             print("Processed {} reads\r".format(read_num), file=sys.stderr, end = "")
@@ -44,6 +45,7 @@ def find_duplicates():
     return insert_dict
 
 def make_bins(insert_dict, bin_size, max_insert):
+    """ Assigns the insert sizes and corresponding duplicates to bins of <bin size> size"""
 
     bin_dict = {x:[0, 0, 0] for x in range(0, max_insert + 1, bin_size)}
     for insert_size in insert_dict:
@@ -70,7 +72,7 @@ if __name__ == "__main__":
     print("Library\tBin\tTotal reads\tOptical duplicates\tPCR duplicates\tOptical duplicate rate\tPCR duplicate rate\tTotal duplicate rate")
     for bin in sorted(bin_dict.keys(), key=int):
         if bin_dict[bin][0] == 0:
-            bin_dict[bin].extend([0,0,0])
+            bin_dict[bin].extend([0,0,0]) # To avoid dividing by zero if any bins have no reads
         else:
             bin_dict[bin].append(bin_dict[bin][1] / bin_dict[bin][0])
             bin_dict[bin].append(bin_dict[bin][2] / bin_dict[bin][0])
