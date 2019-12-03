@@ -54,9 +54,8 @@ def make_bins(insert_dict, bin_size, max_insert):
         else:
             bin = bin_size * int(insert_size / bin_size)
 
-        bin_dict[bin][0] += insert_dict[insert_size][0]
-        bin_dict[bin][1] += insert_dict[insert_size][1]
-        bin_dict[bin][2] += insert_dict[insert_size][2]
+        for x in range(0, 3):
+            bin_dict[bin][x] += insert_dict[insert_size][x]
     
     return bin_dict
 
@@ -70,15 +69,14 @@ def run_script():
 
     print("Library\tBin\tTotal reads\tOptical duplicates\tPCR duplicates\tOptical duplicate rate\tPCR duplicate rate\tTotal duplicate rate")
     for bin in sorted(bin_dict.keys(), key=int):
-        if bin_dict[bin][0] == 0:
-            bin_dict[bin].extend([0,0,0]) # To avoid dividing by zero if any bins have no reads
+        if bin_dict[bin][0] == 0: # To avoid dividing by zero if any bins have no reads
+            bin_dict[bin].extend([0,0,0])
         else:
-            bin_dict[bin].append(bin_dict[bin][1] / bin_dict[bin][0])
-            bin_dict[bin].append(bin_dict[bin][2] / bin_dict[bin][0])
-            bin_dict[bin].append((bin_dict[bin][1] + bin_dict[bin][2]) / bin_dict[bin][0])
+            bin_dict[bin].append(bin_dict[bin][1] / bin_dict[bin][0]) # Optical duplicate rate
+            bin_dict[bin].append(bin_dict[bin][2] / bin_dict[bin][0]) # PCR duplicate rate
+            bin_dict[bin].append((bin_dict[bin][1] + bin_dict[bin][2]) / bin_dict[bin][0]) # Total duplicate rate
 
-        print("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(args.library, bin, bin_dict[bin][0], bin_dict[bin][1], bin_dict[bin][2], \
-                                                      bin_dict[bin][3], bin_dict[bin][4], bin_dict[bin][5]))    
+        print("{}\t{}\t{}".format(args.library, bin, "\t".join(map(str, bin_dict[bin]))))
 
 if __name__ == "__main__":
     run_script()
