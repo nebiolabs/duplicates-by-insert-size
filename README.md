@@ -1,4 +1,4 @@
-# optical-duplicate-insert-size
+# duplicates-by-insert-size
 This program finds all reads marked as duplicate by Picard MarkDuplicates, and assigns them as either an optical duplicate or PCR duplicate (based on the DT:Z:\<SQ/LB> flag set by MarkDuplicates. To get this flag, you'll have to run MarkDuplicates with the --TAGGING_POLICY=All option set.
 
 Usage:
