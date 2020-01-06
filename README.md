@@ -12,3 +12,11 @@ Alternatively, the data can be piped in with 'cat' if it's a sam file. One could
 Prints to stdout the following columns:
 
 Library | Bin | Total reads | Optical duplicates | PCR duplicates | Optical duplicate rate | PCR duplicate rate | Total duplicate rate
+
+As an example, pcr-free libraries might look something like the below image, with a very low overall PCR duplicate rate and relatively higher optical duplicate rate:
+![pcr-free example](/images/pcr-free.png)
+
+
+
+On the other extreme, targeted libraries might have the reverse pattern (unless using UMIs), in which there is a very high called PCR duplicate rate and relatively low optical duplicate rate:
+![targeted example](/images/targeted_capture.png)
